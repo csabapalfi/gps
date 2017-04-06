@@ -14,6 +14,8 @@ GPS_SLACK_TOKEN=1212 gps "http://example.com" "#my-channel"
 
 ## todo
 
+* [x] basic PageSpeed request
+* [x] parse score from PageSpeed response
 * [ ] parse args
 * [ ] run both mobile/desktop strategy
 * [ ] add threshold flags
