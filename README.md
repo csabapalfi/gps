@@ -1,8 +1,10 @@
 # Google PageSpeed -> Slack (WIP)
 
-Post Google PageSpeed scores to Slack.
+Post *G*oogle *P*ageSpeed scores to *S*lack.
 
 The idea is to run this from your CI/CD periodically and/or after deployments.
+
+I built a node version of this for one of my clients but want to have a lighter single-binary version.
 
 ## usage
 
