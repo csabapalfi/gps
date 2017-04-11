@@ -21,17 +21,6 @@ func debug(data []byte, err error) {
 	}
 }
 
-func getJson(pageSpeedUrl string, target interface{}) error {
-	response, err := myClient.Get(pageSpeedUrl)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-	debug((httputil.DumpResponse(response, true)))
-
-	return json.NewDecoder(response.Body).Decode(target)
-}
-
 func buildPageSpeedUrl(targetUrl string, strategy string) string {
 	pageSpeedUrl := &url.URL{
 		Host:   "www.googleapis.com",
@@ -43,6 +32,20 @@ func buildPageSpeedUrl(targetUrl string, strategy string) string {
 	q.Set("strategy", strategy)
 	pageSpeedUrl.RawQuery = q.Encode()
 	return pageSpeedUrl.String()
+}
+
+func getScore(targetUrl string, strategy string) (error, int) {
+	pageSpeedUrl := buildPageSpeedUrl(targetUrl, strategy)
+	response, err := myClient.Get(pageSpeedUrl)
+	if err != nil {
+		return err, 0;
+	}
+	defer response.Body.Close()
+	debug((httputil.DumpResponse(response, true)))
+
+	result := &PageSpeedResult{}
+	json.NewDecoder(response.Body).Decode(result)
+	return nil, result.RuleGroups.Speed.Score;
 }
 
 type PageSpeedResult struct {
@@ -58,8 +61,10 @@ func main() {
 	var args = flag.Args()
 	targetUrl, slackChannel := args[0], args[1]
 
-	result := &PageSpeedResult{}
-	getJson(buildPageSpeedUrl(targetUrl, "mobile"), result)
-	println(result.RuleGroups.Speed.Score)
-	println(slackChannel)
+	_, mobile := getScore(targetUrl, "mobile")
+	_, desktop := getScore(targetUrl, "desktop")
+
+	message := fmt.Sprintf("📱 %d  🖥 %d", mobile, desktop)
+
+	println(slackChannel, message)
 }
