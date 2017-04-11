@@ -36,13 +36,13 @@ func buildPageSpeedUrl(targetUrl string, strategy string) string {
 	pageSpeedUrl := &url.URL{
 		Host:   "www.googleapis.com",
 		Scheme: "https",
-		Path: "pagespeedonline/v2/runPagespeed",
+		Path:   "pagespeedonline/v2/runPagespeed",
 	}
 	q := pageSpeedUrl.Query()
 	q.Set("url", targetUrl)
 	q.Set("strategy", strategy)
 	pageSpeedUrl.RawQuery = q.Encode()
-	return pageSpeedUrl.String();
+	return pageSpeedUrl.String()
 }
 
 type PageSpeedResult struct {
