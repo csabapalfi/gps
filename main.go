@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"time"
 )
 
@@ -19,8 +21,8 @@ func debug(data []byte, err error) {
 	}
 }
 
-func getJson(url string, target interface{}) error {
-	response, err := myClient.Get(url)
+func getJson(pageSpeedUrl string, target interface{}) error {
+	response, err := myClient.Get(pageSpeedUrl)
 	if err != nil {
 		return err
 	}
@@ -28,6 +30,19 @@ func getJson(url string, target interface{}) error {
 	debug((httputil.DumpResponse(response, true)))
 
 	return json.NewDecoder(response.Body).Decode(target)
+}
+
+func buildPageSpeedUrl(targetUrl string, strategy string) string {
+	pageSpeedUrl := &url.URL{
+		Host:   "www.googleapis.com",
+		Scheme: "https",
+		Path: "pagespeedonline/v2/runPagespeed",
+	}
+	q := pageSpeedUrl.Query()
+	q.Set("url", targetUrl)
+	q.Set("strategy", strategy)
+	pageSpeedUrl.RawQuery = q.Encode()
+	return pageSpeedUrl.String();
 }
 
 type PageSpeedResult struct {
@@ -39,7 +54,12 @@ type PageSpeedResult struct {
 }
 
 func main() {
+	flag.Parse()
+	var args = flag.Args()
+	targetUrl, slackChannel := args[0], args[1]
+
 	result := &PageSpeedResult{}
-	getJson("https://www.googleapis.com/pagespeedonline/v2/runPagespeed?url=http://www.example.com&strategy=mobile", result)
+	getJson(buildPageSpeedUrl(targetUrl, "mobile"), result)
 	println(result.RuleGroups.Speed.Score)
+	println(slackChannel)
 }
