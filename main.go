@@ -38,14 +38,14 @@ func getScore(targetUrl string, strategy string) (error, int) {
 	pageSpeedUrl := buildPageSpeedUrl(targetUrl, strategy)
 	response, err := myClient.Get(pageSpeedUrl)
 	if err != nil {
-		return err, 0;
+		return err, 0
 	}
 	defer response.Body.Close()
 	debug((httputil.DumpResponse(response, true)))
 
 	result := &PageSpeedResult{}
 	json.NewDecoder(response.Body).Decode(result)
-	return nil, result.RuleGroups.Speed.Score;
+	return nil, result.RuleGroups.Speed.Score
 }
 
 type PageSpeedResult struct {
