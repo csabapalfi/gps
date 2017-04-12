@@ -18,6 +18,6 @@ GPS_SLACK_TOKEN=1212 gps "http://example.com" "#my-channel"
 * [x] parse score from PageSpeed response
 * [x] parse args
 * [x] run both mobile/desktop strategy
-* [ ] add threshold flags
+* [x] add threshold flags
 * [x] build result message
 * [ ] post to slack

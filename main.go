@@ -38,7 +38,7 @@ func getScore(targetUrl string, strategy string, verbose bool) (error, int) {
 	pageSpeedUrl := buildPageSpeedUrl(targetUrl, strategy)
 	response, err := myClient.Get(pageSpeedUrl)
 	if err != nil {
-		return err, 0
+		return err, -1
 	}
 	defer response.Body.Close()
 	if verbose {
@@ -48,6 +48,13 @@ func getScore(targetUrl string, strategy string, verbose bool) (error, int) {
 	result := &PageSpeedResult{}
 	json.NewDecoder(response.Body).Decode(result)
 	return nil, result.RuleGroups.Speed.Score
+}
+
+func getIcon(score, threshold int) string {
+	if score >= threshold {
+		return "✅"
+	}
+	return "❌"
 }
 
 type PageSpeedResult struct {
@@ -60,14 +67,19 @@ type PageSpeedResult struct {
 
 func main() {
 	verbose := flag.Bool("v", false, "verbose")
+	mobileThreshold := flag.Int("mobile", 0, "mobile threshold")
+	desktopThreshold := flag.Int("desktop", 0, "desktop threshold")
 	flag.Parse()
 	var args = flag.Args()
 	targetUrl, slackChannel := args[0], args[1]
 
-	_, mobile := getScore(targetUrl, "mobile", *verbose)
-	_, desktop := getScore(targetUrl, "desktop", *verbose)
+	_, mobileScore := getScore(targetUrl, "mobile", *verbose)
+	_, desktopScore := getScore(targetUrl, "desktop", *verbose)
 
-	message := fmt.Sprintf("📱 %d  🖥 %d", mobile, desktop)
+	mobileIcon := getIcon(mobileScore, *mobileThreshold)
+	desktopIcon := getIcon(desktopScore, *desktopThreshold)
+
+	message := fmt.Sprintf("📱 %d %s  🖥 %d %s", mobileScore, mobileIcon, desktopScore, desktopIcon)
 
 	println(slackChannel, message)
 }
