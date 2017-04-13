@@ -2,12 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"time"
 )
 
@@ -19,6 +21,18 @@ func debug(data []byte, err error) {
 	} else {
 		log.Fatalf("%s\n\n", err)
 	}
+}
+
+func getJson(url string, target interface{}, verbose bool) error {
+	response, err := myClient.Get(url)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if verbose {
+		debug((httputil.DumpResponse(response, true)))
+	}
+	return json.NewDecoder(response.Body).Decode(target)
 }
 
 func buildPageSpeedUrl(targetUrl string, strategy string) string {
@@ -34,20 +48,53 @@ func buildPageSpeedUrl(targetUrl string, strategy string) string {
 	return pageSpeedUrl.String()
 }
 
-func getScore(targetUrl string, strategy string, verbose bool) (error, int) {
+func getPageSpeedScore(targetUrl string, strategy string, verbose bool) int {
+	type PageSpeedResult struct {
+		RuleGroups struct {
+			Speed struct {
+				Score int
+			}
+		}
+	}
 	pageSpeedUrl := buildPageSpeedUrl(targetUrl, strategy)
-	response, err := myClient.Get(pageSpeedUrl)
-	if err != nil {
-		return err, -1
-	}
-	defer response.Body.Close()
-	if verbose {
-		debug((httputil.DumpResponse(response, true)))
-	}
-
 	result := &PageSpeedResult{}
-	json.NewDecoder(response.Body).Decode(result)
-	return nil, result.RuleGroups.Speed.Score
+	err := getJson(pageSpeedUrl, result, verbose)
+	if err != nil {
+		handleError(err)
+	}
+	return result.RuleGroups.Speed.Score
+}
+
+func buildSlackUrl(channel string, message string) string {
+	slackUrl := &url.URL{
+		Host:   "slack.com",
+		Scheme: "https",
+		Path:   "api/chat.postMessage",
+	}
+	token := os.Getenv("SLACK_TOKEN")
+	q := slackUrl.Query()
+	q.Set("token", token)
+	q.Set("channel", channel)
+	q.Set("text", message)
+	q.Set("as_user", "true")
+	slackUrl.RawQuery = q.Encode()
+	return slackUrl.String()
+}
+
+func postToSlack(channel string, message string, verbose bool) {
+	type SlackResult struct {
+		Ok    bool
+		Error string
+	}
+	url := buildSlackUrl(channel, message)
+	result := &SlackResult{}
+	err := getJson(url, result, verbose)
+	if err != nil {
+		handleError(err)
+	}
+	if err == nil && !result.Ok {
+		handleError(errors.New(result.Error))
+	}
 }
 
 func getIcon(score, threshold int) string {
@@ -57,12 +104,9 @@ func getIcon(score, threshold int) string {
 	return "❌"
 }
 
-type PageSpeedResult struct {
-	RuleGroups struct {
-		Speed struct {
-			Score int
-		}
-	}
+func handleError(err error) {
+	log.Fatalf("%s\n\n", err)
+	os.Exit(1)
 }
 
 func main() {
@@ -73,13 +117,13 @@ func main() {
 	var args = flag.Args()
 	targetUrl, slackChannel := args[0], args[1]
 
-	_, mobileScore := getScore(targetUrl, "mobile", *verbose)
-	_, desktopScore := getScore(targetUrl, "desktop", *verbose)
+	mobileScore := getPageSpeedScore(targetUrl, "mobile", *verbose)
+	desktopScore := getPageSpeedScore(targetUrl, "desktop", *verbose)
 
 	mobileIcon := getIcon(mobileScore, *mobileThreshold)
 	desktopIcon := getIcon(desktopScore, *desktopThreshold)
 
-	message := fmt.Sprintf("📱 %d %s  🖥 %d %s", mobileScore, mobileIcon, desktopScore, desktopIcon)
-
-	println(slackChannel, message)
+	slackMessage := fmt.Sprintf("📱 %d %s  🖥 %d %s", mobileScore, mobileIcon, desktopScore, desktopIcon)
+	postToSlack(slackChannel, slackMessage, *verbose)
+	fmt.Printf("Posted to %s: %s", slackChannel, slackMessage)
 }
