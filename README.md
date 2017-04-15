@@ -6,6 +6,10 @@ The idea is to run this from your CI/CD periodically and/or after deployments.
 
 I built a node version of this for one of my clients but want to have a lighter single-binary version.
 
+## installation
+
+Grab the [latest release from Github](https://github.com/csabapalfi/gps/releases/latest).
+
 ## basic usage
 
 A Slack token is expected to be set as the `SLACK_TOKEN` environment variable.
