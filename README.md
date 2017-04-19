@@ -19,7 +19,7 @@ This should output something like this:
 ```
 📱 99 ✅  🖥 99 ✅  http://example.com
 ```
-If you want to post to Slack then check out the brilliant [slackcat](https://github.com/crewjam/slackcat) tool:
+If you want to post to Slack then check out [slackcat](https://github.com/csabapalfi/slackcat):
 ```sh
 gps "http://example.com" | slackcat -tee -token=$SLACK_TOKEN -channel=$YOUR_CHANNEL
 ```
