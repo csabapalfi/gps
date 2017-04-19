@@ -1,8 +1,8 @@
-# Google PageSpeed checker
+# Google PageSpeed Score CLI
 
-Check **G**oogle **P**age**S**peed scores.
+Check **G**oogle **P**ageSpeed **S**cores from the command line.
 
-The idea is to run this from your CI/CD periodically and/or after deployments (and post the output message to Slack.)
+The idea is to run this from your CI/CD periodically and/or after deployments (and post the output message to Slack by piping it to slackcat)
 
 I built a node version of this for one of my clients but want to have a lighter single-binary version.
 
