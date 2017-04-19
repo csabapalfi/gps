@@ -17,7 +17,7 @@ gps "http://example.com"
 ```
 This should output something like this:
 ```
-📱 99 ✅  🖥 99 ✅
+📱 99 ✅  🖥 99 ✅  http://example.com
 ```
 If you want to post to Slack then check out the brilliant [slackcat](https://github.com/crewjam/slackcat) tool:
 ```sh
@@ -33,7 +33,7 @@ gps -mobile 100 -desktop 90 "http://example.com"
 ```
 Scores above the threshold get a green tick, scores below get a red X:
 ```
-📱 99 ❌  🖥 99 ✅
+📱 99 ❌  🖥 99 ✅  http://example.com
 ```
 
 ## verbose output
@@ -58,5 +58,5 @@ HTTP/2.0 200 OK
  "id": "http://example.com",
  "responseCode": 200,
 ...
-📱 99 ✅  🖥 99 ✅
+📱 99 ✅  🖥 99 ✅  http://example.com
 ```

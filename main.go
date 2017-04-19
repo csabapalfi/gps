@@ -90,6 +90,5 @@ func main() {
 	mobileIcon := getIcon(mobileScore, *mobileThreshold)
 	desktopIcon := getIcon(desktopScore, *desktopThreshold)
 
-	result := fmt.Sprintf("📱 %d %s  🖥 %d %s", mobileScore, mobileIcon, desktopScore, desktopIcon)
-	println(result)
+	fmt.Printf("📱 %d %s  🖥 %d %s  %s", mobileScore, mobileIcon, desktopScore, desktopIcon, targetURL)
 }
