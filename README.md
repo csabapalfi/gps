@@ -1,8 +1,8 @@
-# Google PageSpeed -> Slack
+# Google PageSpeed checker
 
-Post *G*oogle *P*ageSpeed scores to *S*lack.
+Check **G**oogle **P**age**S**peed scores.
 
-The idea is to run this from your CI/CD periodically and/or after deployments.
+The idea is to run this from your CI/CD periodically and/or after deployments (and post the output message to Slack.)
 
 I built a node version of this for one of my clients but want to have a lighter single-binary version.
 
@@ -12,35 +12,36 @@ Grab the [latest release from Github](https://github.com/csabapalfi/gps/releases
 
 ## basic usage
 
-A Slack token is expected to be set as the `SLACK_TOKEN` environment variable.
 ```sh
-export SLACK_TOKEN=1212
-gps "http://example.com" "my-channel"
+gps "http://example.com"
 ```
 This should output something like this:
 ```
-Posted to my-channel: 📱 99 ✅  🖥 99 ✅
+📱 99 ✅  🖥 99 ✅
 ```
-...and of course the message should pop up on Slack, too.
+If you want to post to Slack then check out the brilliant [slackcat](https://github.com/crewjam/slackcat) tool:
+```sh
+gps "http://example.com" | slackcat -tee -token=$SLACK_TOKEN -channel=$YOUR_CHANNEL
+```
 
 
 ## defining thresholds
 
 You can define thresholds to check your score using the `mobile` and `desktop` flags:
 ```sh
-gps -mobile 100 -desktop 90 "http://example.com" "my-channel"
+gps -mobile 100 -desktop 90 "http://example.com"
 ```
 Scores above the threshold get a green tick, scores below get a red X:
 ```
-Posted to my-channel: 📱 99 ❌  🖥 99 ✅
+📱 99 ❌  🖥 99 ✅
 ```
 
 ## verbose output
 
-To log PageSpeed and Slack API responses just pass the `-v` flag:
+To log PageSpeed API responses just pass the `-v` flag:
 
 ```sh
-gps -v "http://example.com" "my-channel"
+gps -v "http://example.com"
 ```
 ```
 HTTP/2.0 200 OK
@@ -57,9 +58,5 @@ HTTP/2.0 200 OK
  "id": "http://example.com",
  "responseCode": 200,
 ...
-HTTP/1.1 200 OK
-...
-{"ok":true,
-...
-Posted to my-channel: 📱 99 ✅  🖥 99 ✅
+📱 99 ✅  🖥 99 ✅
 ```
